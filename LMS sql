@@ -1,0 +1,139 @@
+Case Study_70 – Sql Solutions
+
+1. Create the tables
+
+CREATE TABLE Books (
+book_id INT PRIMARY KEY, 
+title VARCHAR(100), 
+author VARCHAR(50), 
+genre VARCHAR(50), 
+price DECIMAL(10, 2), 
+quantity_in_stock INT
+ );
+
+CREATE TABLE Borrowers ( 
+borrower_id INT PRIMARY KEY, 
+name VARCHAR(100), 
+contact VARCHAR(50) 
+);
+
+CREATE TABLE Borrowing ( 
+borrowing_id INT PRIMARY KEY, 
+book_id INT, 
+borrower_id INT, 
+quantity_borrowed INT, 
+borrowing_date DATE, 
+FOREIGN KEY (book_id) REFERENCES Books(book_id), 
+FOREIGN KEY (borrower_id) REFERENCES Borrowers(borrower_id) 
+);
+
+2. Sample Inputs to the Tables
+
+INSERT INTO Books (book_id, title, author, genre, price, quantity_in_stock) VALUES
+(1, 'Circe', 'Madeline Miller', 'Fantasy', 800.15, 3),
+(2, 'The Atlantis Gene', 'A.G. Riddle', 'Science Fiction', 531.99, 50),
+(3, 'White Fang', 'Jack London', 'Adventure', 1500.59, 25),
+(4, 'The Overdue Life of Amy Byler', 'Kelly Harms', 'Romance', 250.19, 17),
+(5, 'The Shining', 'Stephen King', 'Horror', 900.09, 7);
+(6, 'The Girl with the Dragon Tattoo', 'Stieg Larsson', 'Thriller', 900.09, 7);
+(7, 'Alexander Hamilton', 'Ron Chernow', 'Thriller', 900.09, 7);
+(8, 'Indian Instant Pot Cookbook', 'Stieg Larsson', 'Biography', 1250.59, 10);
+(9, 'How to Create Stunning Digital Photography', 'Urvashi Pitre', 'Cooking', 1900.49, 27);
+(10, 'Sapiens: A Brief History of Mankind', 'Yuval Harari', 'History', 1600.22, 17);
+
+INSERT INTO Borrowers (borrower_id, name, contact) VALUES
+(1, 'Sri Hari', 'sri@gmail.com'),
+(2, 'Harish', 'hari@gmail.coom'),
+(3, 'Vishal', 'vishal@gmail.com'),
+(4, 'Aadhi', 'aadhi@gmail.com'),
+(5, 'Vadi', 'vadi@gmail.coom'),
+(6, 'Swathi', 'swathi@gmail.com');
+(7, 'Surya', 'surya@gmail.com'),
+(8, 'Vijay', 'vijay@gmail.coom'),
+(9, 'Arjun', 'arjun@gmail.com');
+
+INSERT INTO Borrowing (borrowing_id, book_id, borrower_id, quantity_borrowed, borrowing_date) VALUES
+(1, 1, 1, 5, '2024-05-01'),   
+(2, 2, 2, 15, '2024-06-02'),  
+(3, 4, 3, 7, '2024-01-03'),   
+(4, 3, 1, 4, '2024-04-04'),   
+(5, 5, 2, 3, '2024-02-05'),   
+(6, 6, 1, 8, '2024-04-06'),   
+(7, 7, 2, 6, '2024-03-07'),   
+(8, 2, 1, 18, '2024-02-08'), 
+(9, 8, 3, 3, '2024-01-09');   
+
+SQL Queries:
+1. Write a query to find the total quantity of each book borrowed.
+
+SELECT book_id, sum(quantity_borrowed) as total_quantity_borrowed
+From Borrowing
+Group By book_id
+
+Output:
+book_id	total_quantity_borrowed
+1	5
+2	33
+3	4
+4	7
+5	3
+6	8
+7	6
+8	3
+
+2. Write a query to find the book title and total quantity borrowed for each book.
+
+SELECT B.title, SUM(BR.quantity_borrowed) AS total_quantity_borrowed
+FROM Books B
+JOIN Borrowing BR ON B.book_id = BR.book_id
+GROUP BY B.title;
+
+Output:
+title	total_quantity_borrowed
+Alexander Hamilton	6
+Circe	5
+Indian Instant Pot Cookbook	3
+The Atlantis Gene	33
+The Girl with the Dragon Tattoo	8
+The Overdue Life of Amy Byler	7
+The Shining	3
+White Fang	4
+
+
+
+
+3. Write a query to find the titles of books that have never been borrowed.
+
+SELECT title
+FROM Books
+WHERE book_id NOT IN (SELECT DISTINCT book_id FROM Borrowing);
+
+Output:
+title
+How to Create Stunning Digital Photography
+Sapiens: A Brief History of Mankind
+
+
+
+4. Write a query to find the books that have been borrowed more than 10 times.
+
+SELECT book_id
+FROM Borrowing
+GROUP BY book_id
+HAVING SUM(quantity_borrowed) > 10;
+
+Output:
+book_id
+2
+
+
+
+5. Write a query to find the book titles and their current stock levels for books that have been borrowed more than 20 times.
+
+SELECT B.title, (B.quantity_in_stock - COALESCE(SUM(BR.quantity_borrowed), 0)) AS remaining_stock
+FROM Books B
+LEFT JOIN Borrowing BR ON B.book_id = BR.book_id
+GROUP BY B.title, B.quantity_in_stock
+HAVING SUM(BR.quantity_borrowed) > 20;
+
+
