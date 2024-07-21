@@ -1,0 +1,155 @@
+class Book:
+    def __init__(self, book_id, title, author, genre, price, quantity_in_stock):
+        self.book_id = book_id
+        self.title = title
+        self.author = author
+        self.genre = genre
+        self.price = price
+        self.quantity_in_stock = quantity_in_stock
+
+class Library:
+    def __init__(self):
+        self.books = {}
+    
+    def add_book(self, book):
+        if book.book_id in self.books:
+            raise Exception("Book with this ID already exists.")
+        self.books[book.book_id] = book
+        print("Book added successfully.")
+    
+    def update_book(self, book_id, **kwargs):
+        if book_id not in self.books:
+            raise Exception("Book with the given ID does not exist.")
+        for key, value in kwargs.items():
+            if hasattr(self.books[book_id], key):
+                if key in ['price', 'quantity_in_stock']:
+                    try:
+                        value = float(value) if key == 'price' else int(value)
+                    except ValueError:
+                        print(f"Invalid value for {key}. Must be a number.")
+                        continue
+                setattr(self.books[book_id], key, value)
+            else:
+                print(f"Invalid attribute: {key}")
+        print("Book updated successfully.")
+    
+    def delete_book(self, book_id):
+        if book_id not in self.books:
+            raise Exception("Book with the given ID does not exist.")
+        del self.books[book_id]
+        print("Book deleted successfully.")
+    
+    def check_availability(self, book_id):
+        if book_id in self.books:
+            quantity = self.books[book_id].quantity_in_stock
+            if quantity > 0:
+                return f"Book is available. Quantity in stock: {quantity}"
+            else:
+                return "Book is not available."
+        else:
+            return "Book with the given ID does not exist."
+
+    def borrow_book(self, book_id):
+        if not self.check_availability(book_id):
+            print("Book is not available for borrowing.")
+            return
+        self.update_quantity(book_id, -1)
+        print("Book borrowed successfully.")
+    
+    def return_book(self, book_id):
+        if book_id not in self.books:
+            print("Book with the given ID does not exist.")
+            return
+        self.update_quantity(book_id, 1)
+        print("Book returned successfully.")
+    
+    def update_quantity(self, book_id, quantity):
+        if book_id not in self.books:
+            raise Exception("Book with the given ID does not exist.")
+        new_quantity = self.books[book_id].quantity_in_stock + quantity
+        if new_quantity < 0:
+            raise Exception("Quantity cannot be negative.")
+        self.books[book_id].quantity_in_stock = new_quantity
+    
+    def generate_low_report(self):
+        low_stock = [book for book in self.books.values() if book.quantity_in_stock < 5]
+        if low_stock:
+            print("Books that are low on stock:")
+            for book in low_stock:
+                print(f"{book.title} (ID: {book.book_id}) - Quantity: {book.quantity_in_stock}")
+        else:
+            print("No books are low on stock.")
+
+def main():
+    library = Library()
+    
+    while True:
+        print("\nLibrary Management System")
+        print("1. Add a new book")
+        print("2. Update book details")
+        print("3. Delete a book")
+        print("4. Check book availability")
+        print("5. Borrow a book")
+        print("6. Return a book")
+        print("7. Generate low stock report")
+        print("8. Exit")
+        
+        choice = input("Enter your choice (1-8): ")
+        
+        try:
+            if choice == '1':
+                book_id = int(input("Enter Book ID: "))
+                title = input("Enter Title: ")
+                author = input("Enter Author: ")
+                genre = input("Enter Genre: ")
+                price = float(input("Enter Price: "))
+                quantity_in_stock = int(input("Enter Quantity in Stock: "))
+                new_book = Book(book_id, title, author, genre, price, quantity_in_stock)
+                library.add_book(new_book)
+            
+            elif choice == '2':
+                book_id = int(input("Enter Book ID to update: "))
+                attribute = input("Enter attribute to update (title/author/genre/price/quantity_in_stock): ")
+                new_value = input(f"Enter new {attribute}: ")
+                if attribute in ['price', 'quantity_in_stock']:
+                    try:
+                        new_value = float(new_value) if attribute == 'price' else int(new_value)
+                    except ValueError:
+                        print("Invalid value.")
+                        continue
+                library.update_book(book_id, **{attribute: new_value})
+            
+            elif choice == '3':
+                book_id = int(input("Enter Book ID to delete: "))
+                library.delete_book(book_id)
+            
+            elif choice == '4':
+                book_id = int(input("Enter Book ID to check availability: "))
+                print(library.check_availability(book_id))
+            
+            elif choice == '5':
+                book_id = int(input("Enter Book ID to borrow: "))
+                library.borrow_book(book_id)
+            
+            elif choice == '6':
+                book_id = int(input("Enter Book ID to return: "))
+                library.return_book(book_id)
+            
+            elif choice == '7':
+                library.generate_low_report()
+            
+            elif choice == '8':
+                print("Exiting Library Management System.")
+                break
+            
+            else:
+                print("Invalid choice. Please enter a number between 1 and 8.")
+
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+if __name__ == "__main__":
+    main()
