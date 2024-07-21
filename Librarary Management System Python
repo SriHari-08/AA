@@ -1,0 +1,123 @@
+class Book:
+    def __init__(self, book_id, title, author, genre, price, quantity_in_stock):
+        self.book_id = book_id
+        self.title = title
+        self.author = author
+        self.genre = genre
+        self.price = price
+        self.quantity_in_stock = quantity_in_stock
+
+class Library:
+    def __init__(self):
+        self.books = {}
+    
+    def add_book(self,book):
+        if book.book_id in self.books:
+            raise Exception("Book already exists.")
+        self.books[book.book_id] = book
+        print("Book added successfully")
+
+    def update_book(self, book_id, **kwargs):
+        if book_id not in self.books:
+            raise Exception("Book with given id not exists")
+        for key, value in kwargs.items():
+            if hasattr(self.books[book_id],key):
+                setattr(self.books[book_id], key, value)
+        print("Book with given id is updated successfully")
+    
+    def delete_book(self, book_id):
+        if book_id not in self.books:
+            raise Exception("Book with given id not available")
+        del self.books[book_id]
+        print("Book with given id is deleted successfully")
+
+    def check_availability(self, book_id):
+        if book_id in self.books:
+            return self.books[book_id].quantity_in_stock > 0
+        return False
+    
+    def update_quantity(self, book_id, quantity):
+        if book_id not in self.books:
+            raise Exception("Book with given id not exists")
+        self.books[book_id].quantity_in_stock += quantity
+        print("Book with given id updated successfully")
+    
+    def generate_low_report(self):
+        low_stock = []
+        for book in self.books.values():
+            if book.quantity_in_stock < 5:
+                low_stock.append(book)
+        if low_stock:
+            print("Book that are low stock:")
+            for book in low_stock:
+                print(f"{book.title} (ID: {book.book_id}) - Quantity: {book.quantity_in_stock}")
+        else:
+            print("Now books are in low stock")
+        
+
+def main():
+    library = Library()
+    
+    while True:
+        print("\n Library Management System ")
+        print("1. Add a new book")
+        print("2. Update book details")
+        print("3. Delete a book")
+        print("4. Check book availability")
+        print("5. Update quantity of a book")
+        print("6. Generate low stock report")
+        print("7. Exit")
+        
+        choice = input("Enter your choice (1-7): ")
+        
+        try:
+            if choice == '1':
+                book_id = int(input("Enter Book ID: "))
+                title = input("Enter Title: ")
+                author = input("Enter Author: ")
+                genre = input("Enter Genre: ")
+                price = float(input("Enter Price: "))
+                quantity_in_stock = int(input("Enter Quantity in Stock: "))
+                new_book = Book(book_id, title, author, genre, price, quantity_in_stock)
+                library.add_book(new_book)
+            
+            elif choice == '2':
+                book_id = int(input("Enter Book ID to update: "))
+                attribute = input("Enter attribute to update (title/author/genre/price/quantity_in_stock): ")
+                new_value = input(f"Enter new {attribute}: ")
+                library.update_book(book_id, **{attribute: new_value})
+            
+            elif choice == '3':
+                book_id = int(input("Enter Book ID to delete: "))
+                library.delete_book(book_id)
+            
+            elif choice == '4':
+                book_id = int(input("Enter Book ID to check availability: "))
+                if library.check_availability(book_id):
+                    print("Book is available.")
+                else:
+                    print("Book is not available")
+    
+            elif choice == '5':
+                book_id = int(input("Enter Book ID to update quantity: "))
+                quantity = int(input("Enter Quantity to add (positive) or remove (negative): "))
+                library.update_quantity(book_id, quantity)
+            
+            elif choice == '6':
+                library.generate_low_report()
+            
+            elif choice == '7':
+                print("Exiting Library Management System.")
+                break
+            
+            else:
+                print("Invalid choice. Please enter a number between 1 and 7.")
+
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+if __name__ == "__main__":
+    main()
